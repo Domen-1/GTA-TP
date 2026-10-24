@@ -6,7 +6,7 @@
 
 ![Дальний телепорт с Distant Horizons](docs/media/far.gif)
 
-Ролики со звуком: [дальний](https://github.com/Domen-1/GTA-TP/releases/download/v1.1.0%2Bmc26.3/far.mp4) · [средний](https://github.com/Domen-1/GTA-TP/releases/download/v1.1.0%2Bmc26.3/medium.mp4) · [ближний](https://github.com/Domen-1/GTA-TP/releases/download/v1.1.0%2Bmc26.3/near.mp4)
+Ролики со звуком: [дальний](docs/media/far.mp4) · [средний](docs/media/medium.mp4) · [ближний](docs/media/near.mp4)
 (записаны с Sodium и Distant Horizons).
 
 ## Что происходит при телепорте
