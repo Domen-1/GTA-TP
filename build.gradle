@@ -1,0 +1,76 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+version = "${project.mod_version}+${project.minecraft_version}"
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	maven {
+		name = 'TerraformersMC'
+		url = 'https://maven.terraformersmc.com/releases'
+		content { includeGroup('com.terraformersmc') }
+	}
+}
+
+loom {
+	mods {
+		"gta_teleport" {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+// ./gradlew runClientGameTest: opens a client window, flies a spectator across a singleplayer world and takes
+// screenshots of every phase of the switch (build/run/clientGameTest/screenshots). Needs a display.
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "gta_teleport-test"
+		enableGameTests = false
+		enableClientGameTests = true
+		eula = true
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	// Only for the settings button in the mod list; the mod runs without Mod Menu.
+	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+
+	// Extra mods to fly with in the client game test (Sodium, Distant Horizons...): drop their jars into test-mods/.
+	gametestRuntimeOnly fileTree(dir: "test-mods", include: "*.jar")
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.encoding = "UTF-8"
+}
+
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.archives_base_name}" }
+	}
+}
+
+java {
+	withSourcesJar()
+
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}

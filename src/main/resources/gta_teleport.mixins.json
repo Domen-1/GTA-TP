@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "package": "ru.domen.gtateleport.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "CameraMixin",
+    "ClientPacketListenerMixin",
+    "FogRendererMixin",
+    "GameRendererMixin",
+    "HudMixin",
+    "KeyboardInputMixin",
+    "MouseHandlerMixin",
+    "PlayerMenuItemMixin",
+    "SectionOcclusionGraphMixin",
+    "SodiumOcclusionCullerMixin",
+    "SodiumTraversableTreeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

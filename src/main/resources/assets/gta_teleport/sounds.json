@@ -1,0 +1,29 @@
+{
+    "switch.prep": {
+        "sounds": [
+            "gta_teleport:switch/prep"
+        ]
+    },
+    "switch.jump": {
+        "sounds": [
+            "gta_teleport:switch/jump1",
+            "gta_teleport:switch/jump2",
+            "gta_teleport:switch/jump3"
+        ]
+    },
+    "switch.pan": {
+        "sounds": [
+            "gta_teleport:switch/pan"
+        ]
+    },
+    "switch.land": {
+        "sounds": [
+            "gta_teleport:switch/land"
+        ]
+    },
+    "switch.wind": {
+        "sounds": [
+            "gta_teleport:switch/wind"
+        ]
+    }
+}

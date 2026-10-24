@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "gta_teleport",
+	"version": "${version}",
+	"name": "GTA Teleport",
+	"description": "Spectator teleports play the GTA V character switch: the camera jumps up into the sky in stages, flies across the world and drops down at the destination.",
+	"authors": [
+		"__domen__"
+	],
+	"contact": {
+		"homepage": "https://github.com/Domen-1/GTA-TP",
+		"sources": "https://github.com/Domen-1/GTA-TP",
+		"issues": "https://github.com/Domen-1/GTA-TP/issues"
+	},
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"ru.domen.gtateleport.GtaTeleportClient"
+		],
+		"modmenu": [
+			"ru.domen.gtateleport.ModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"gta_teleport.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

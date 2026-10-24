@@ -1,0 +1,53 @@
+{
+    "targets": {
+        "swap": {}
+    },
+    "passes": [
+        {
+            "vertex_shader": "minecraft:core/screenquad",
+            "fragment_shader": "gta_teleport:post/switch_blur",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "minecraft:main",
+                    "bilinear": true
+                },
+                {
+                    "sampler_name": "Depth",
+                    "target": "minecraft:main",
+                    "use_depth_buffer": true
+                },
+                {
+                    "sampler_name": "FarDepth",
+                    "location": "gta_teleport:far_depth",
+                    "width": 1,
+                    "height": 1
+                },
+                {
+                    "sampler_name": "Params",
+                    "location": "gta_teleport:switch_params",
+                    "width": 4,
+                    "height": 1
+                }
+            ],
+            "output": "swap"
+        },
+        {
+            "vertex_shader": "minecraft:core/screenquad",
+            "fragment_shader": "gta_teleport:post/switch_grade",
+            "inputs": [
+                {
+                    "sampler_name": "In",
+                    "target": "swap"
+                },
+                {
+                    "sampler_name": "Params",
+                    "location": "gta_teleport:switch_params",
+                    "width": 4,
+                    "height": 1
+                }
+            ],
+            "output": "minecraft:main"
+        }
+    ]
+}
