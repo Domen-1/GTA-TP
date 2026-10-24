@@ -47,3 +47,4 @@ target/
 
 # jars for the client game test, see build.gradle
 test-mods/
+CLAUDE.md
