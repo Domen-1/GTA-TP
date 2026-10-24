@@ -95,18 +95,6 @@
   ждёт над целью, но не больше 4 секунд при скорости ×1.
 - Звуки синтезированы для мода, это не звуки из GTA V. Мод не связан с Rockstar Games.
 
-## Сборка
-
-```
-./gradlew build                              # build/libs/gta-teleport-<версия>+26.3.jar
-./gradlew runClientGameTest                  # перелёты в новом мире и экран настроек, скриншоты в build/run/clientGameTest/screenshots
-GTA_TELEPORT_RECORD=1 ./gradlew runClientGameTest && python3 scripts/make_videos.py   # ролики в build/videos
-python3 scripts/make_sounds.py               # пересобрать звуки (numpy + ffmpeg)
-```
-
-Чтобы прогнать тест с другими модами (Sodium, Distant Horizons), положите их jar в папку `test-mods/`. С DH тест
-сначала ждёт, пока тот построит дальний ландшафт.
-
 ## Лицензия
 
 [MIT](LICENSE)
