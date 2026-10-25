@@ -1,12 +1,16 @@
 package ru.domen.gtateleport.test;
 
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.fabricmc.loader.api.FabricLoader;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.domen.gtateleport.ChunkHold;
@@ -45,10 +49,42 @@ public class GtaTeleportClientGameTest implements FabricClientGameTest {
 			fly(context, world, "far", "execute as @a at @s run tp @s ~1500 ~ ~700 -60 20", 3);
 			fly(context, world, "medium", "execute as @a at @s run tp @s ~-180 ~ ~90 120 15", 2);
 			fly(context, world, "near", "execute as @a at @s run tp @s ~35 ~ ~-20 0 10", 2);
+			nether(context, world);
 			plainTeleports(context, world);
 			settingsScreen(context);
 			LOG.info("GTA Teleport client test done");
 		}
+	}
+
+	/**
+	 * The Nether: from the top of the bedrock roof down inside, inside to inside, and back up onto the roof. Over the
+	 * roof the camera has to rise; inside it has to stay under the roof.
+	 */
+	private static void nether(ClientGameTestContext context, TestSingleplayerContext world) {
+		world.getServer().runCommand("execute in minecraft:the_nether run tp @a 0.5 129 0.5 0 20");
+		context.waitFor(mc -> mc.level != null && mc.level.dimension() == Level.NETHER, 600);
+		context.waitTicks(80);
+		world.getConnection().waitForChunksRender(false, 2400);
+		fly(context, world, "nether-roof-down", insideNether(world, 400, -250, 60.0F), 2);
+		fly(context, world, "nether-inside", insideNether(world, -200, -150, 120.0F), 2);
+		fly(context, world, "nether-up-roof", "execute in minecraft:the_nether run tp @a 150.5 129 100.5 0 20", 2);
+	}
+
+	/** A teleport to an open spot inside the Nether, under the roof. */
+	private static String insideNether(TestSingleplayerContext world, int x, int z, float yaw) {
+		return world.getServer().computeOnServer(server -> {
+			ServerLevel nether = server.getLevel(Level.NETHER);
+			nether.getChunk(x >> 4, z >> 4);
+			int y = 70;
+			for (int candidate = 110; candidate > 32; candidate--) {
+				BlockPos pos = new BlockPos(x, candidate, z);
+				if (nether.getBlockState(pos).isAir() && nether.getBlockState(pos.above()).isAir() && !nether.getBlockState(pos.below()).isAir()) {
+					y = candidate;
+					break;
+				}
+			}
+			return String.format(Locale.ROOT, "execute in minecraft:the_nether run tp @a %d.5 %d %d.5 %.1f 20", x, y, z, yaw);
+		});
 	}
 
 	/** Holding the plain teleport key (Left Alt) skips the switch, pressing it mid-flight cuts the flight short. */

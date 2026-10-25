@@ -265,7 +265,8 @@ public final class SwitchCamera {
 		private final double groundStart;
 		private final double renderBlocks;
 		private final double top;
-		private final double ceiling;
+		/** Top of the Nether's bedrock roof; Double.MAX_VALUE where there is none. */
+		private final double roof;
 		private final boolean checkMeshes;
 		private final long fadeMillis;
 		private final int stages;
@@ -331,8 +332,8 @@ public final class SwitchCamera {
 			// With Distant Horizons the whole map is drawn, without it the loaded chunks show as an island in the clouds.
 			int height = SwitchConfig.get().height;
 			this.top = height > 0 ? height : RenderCompat.DISTANT_HORIZONS ? 420.0 : Mth.clamp(this.renderBlocks * 1.2, 100.0, 500.0);
-			this.ceiling = this.level.dimensionType().hasCeiling()
-					? this.level.getMinY() + this.level.dimensionType().logicalHeight() - 6.0
+			this.roof = this.level.dimensionType().hasCeiling()
+					? this.level.getMinY() + this.level.dimensionType().logicalHeight()
 					: Double.MAX_VALUE;
 			this.groundStart = surface(start.pos, start.pos.y);
 			this.groundDest = this.dest.y;
@@ -551,7 +552,7 @@ public final class SwitchCamera {
 			List<@Nullable Pose> list = new ArrayList<>();
 			for (int i = 0; i < this.stages; i++) {
 				float yaw = this.stages == 1 ? this.heading : lerpYaw(this.start.yaw, this.heading, i / (this.stages - 1.0));
-				double y = altitude(this.groundStart, this.start.pos.y, this.heights[i]);
+				double y = altitude(this.groundStart, this.start.pos.y, this.heights[i], i == this.stages - 1);
 				list.add(new Pose(new Vec3(this.start.pos.x, y, this.start.pos.z), yaw, STRAIGHT_DOWN));
 			}
 			return list;
@@ -559,7 +560,7 @@ public final class SwitchCamera {
 
 		/** The highest stage over the destination, where the flight across ends. */
 		private Pose panTarget() {
-			double y = altitude(this.groundDestSmooth, this.dest.y, this.heights[this.stages - 1]);
+			double y = altitude(this.groundDestSmooth, this.dest.y, this.heights[this.stages - 1], true);
 			return new Pose(new Vec3(this.dest.x, y, this.dest.z), this.heading, STRAIGHT_DOWN);
 		}
 
@@ -571,7 +572,7 @@ public final class SwitchCamera {
 			List<@Nullable Pose> list = new ArrayList<>();
 			for (int i = this.stages - 2; i >= 0; i--) {
 				float yaw = lerpYaw(this.heading, this.destYaw, (this.stages - 1.0 - i) / (this.stages - 1.0));
-				double y = altitude(this.groundDest, this.dest.y, this.heights[i]);
+				double y = altitude(this.groundDest, this.dest.y, this.heights[i], false);
 				list.add(new Pose(new Vec3(this.dest.x, y, this.dest.z), yaw, STRAIGHT_DOWN));
 			}
 			list.add(null);
@@ -579,12 +580,23 @@ public final class SwitchCamera {
 		}
 
 		/**
-		 * A stage {@code above} blocks over the ground. A player flying high still sees the camera rise; in the
-		 * Nether the camera stays under the roof.
+		 * A stage {@code above} blocks over the ground. A player flying high still sees the camera rise. Under the
+		 * Nether roof the camera stays below it, unless one end of the teleport is on top of the roof: then the top
+		 * stage is over the roof, the flight across goes there and the camera breaks through the bedrock in a jump.
 		 */
-		private double altitude(double ground, double eyeY, double above) {
+		private double altitude(double ground, double eyeY, double above, boolean top) {
 			double y = Math.max(ground + above, eyeY + above * 0.3);
-			return Math.min(y, Math.max(this.ceiling, this.start.pos.y));
+			if (!underRoof(eyeY)) {
+				return y;
+			}
+			if (top && (!underRoof(this.start.pos.y) || !underRoof(this.dest.y))) {
+				return this.roof + above;
+			}
+			return Math.min(y, Math.max(this.roof - 6.0, eyeY));
+		}
+
+		private boolean underRoof(double eyeY) {
+			return eyeY < this.roof;
 		}
 
 		private float headingFrom(Vec3 from) {
@@ -602,14 +614,15 @@ public final class SwitchCamera {
 			if (!this.level.hasChunk(x >> 4, z >> 4)) {
 				return fallback;
 			}
-			return this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+			// Under the Nether roof the heightmap is the roof: the ground is where the player stands.
+			return underRoof(pos.y) ? pos.y - 1.62 : this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
 		}
 
 		private void updateGroundDest(double dt) {
 			int x = Mth.floor(this.dest.x);
 			int z = Mth.floor(this.dest.z);
 			if (this.level.hasChunk(x >> 4, z >> 4)) {
-				this.groundDest = this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+				this.groundDest = surface(this.dest, this.dest.y);
 				this.groundDestKnown = true;
 			} else if (!this.groundDestKnown) {
 				this.groundDest = this.dest.y;
